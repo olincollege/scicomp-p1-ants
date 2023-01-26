@@ -47,6 +47,7 @@ for time step
     for cell in pheromone map
         pheromones evaporate
 
+    vvv THIS IS DONE
     for each ant (move loop)
         ant move algorithm
             if near trail
@@ -56,6 +57,7 @@ for time step
             if not on trail
                 calculate probability of direction change
                 rotate (if applicable) and step forward
+    ^^^
 
     for each ant (pheromone loop)
         drop pheromone on pheromone map
