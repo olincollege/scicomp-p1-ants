@@ -1,7 +1,7 @@
 
 from numpy import *
 
-class ant:
+class Ant:
     """
     - Position (x, y)
     - Orientation (theta)
@@ -66,7 +66,7 @@ class ant:
     """
     def explore_move(self):
         # pick a random heading based on the kernel
-        new_heading_index = random.choice(arange(0, 4, 1), p=self.kernel) * random.choice([-1,1])
+        new_heading_index = random.choice(arange(0, 5, 1), p=self.kernel) * random.choice([-1,1])
         self.heading = self.reorient(self.orientations)[new_heading_index]
         # move forward with that new heading
         self.shift_position()
