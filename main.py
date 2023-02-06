@@ -31,10 +31,10 @@ from ant import *
 import matplotlib.pyplot as plt
 
 # World  parameters and creation; world_map contains pheromone values.
-world_width = 20
-world_height = 20
+world_width = 100
+world_height = 100
 spawn_point = (int(world_width/2), int(world_height/2))
-spawn_rate = 2
+spawn_rate = 1
 world_map = []
 
 for _ in range(0, world_height):
@@ -44,15 +44,13 @@ for _ in range(0, world_height):
 plt.axis([0, world_width, 0, world_height])
 
 # Model parameters (x_pos, y_pos, fidelity, kernel)
-fidelity = 0.8
-kernel = [0.50, 0.25, 0.15, 0.085, 0.015]
+fidelity = 0.4
+kernel = [0.8, 0.1, 0.04, 0.04, 0.02]
 max_concentration = 1.0
-deposit_rate = 0.2  # Concentration for each ant to add each time step
-evap_rate = 0.1   # Concentration to disappear each time step
+deposit_rate = 0.1  # Concentration for each ant to add each time step
+evap_rate = 0.005   # Concentration to disappear each time step
 time_steps = 200
 
-if sum(kernel) != 1.0:  # Sanity check the kernel
-    raise ValueError('Kernel values do not sum to 1.0.')
 
 # EVAPORATE function
 def evaporate(world_map):
@@ -76,17 +74,20 @@ ants.append(Ant(spawn_point[0], spawn_point[1], fidelity, kernel))
 
 # Conduct main loop
 for t in range(0, time_steps):
-    
-    print("Time step " + str(t))
-    for row in world_map:
-        print(row)
+    trail_mode = 0
+    for ant in ants:
+        trail_mode += int(ant.trail)
+    # Print some telemetry
+    print("Time step " + str(t) + "; # trail mode: " + str(trail_mode) + "; # explore mode: " + str(len(ants)-trail_mode))
+    #for row in world_map:
+    #    print(row)
     
     # Evaporate pheromones on the worldmap
     world_map = evaporate(world_map)
     # Run the move algorithm for each ant that exists
     for ant in ants:
         if ant.x >= 1 and ant.x <= world_width-2 and ant.y >= 1 and ant.y <= world_height-2:
-            ant.move(world_map)
+            ant.alt_move(world_map)
         else:
             ants.remove(ant)
         
@@ -98,8 +99,15 @@ for t in range(0, time_steps):
     if t % spawn_rate == 0:
         ants.append(Ant(spawn_point[0], spawn_point[1], fidelity, kernel))
     
+    # Display the pheromone map
     plt.imshow(world_map, cmap="binary", interpolation="nearest")
-    plt.pause(0.5)
+    plt.pause(0.001)
+    if t < time_steps-1:
+        plt.close()
+    # Display the locations of the ants
+    #points = []
+    #for ant in ants:
+    #    points.append(plt.scatter(ant.y,ant.x,color='r',s=0.1))
 
 plt.show()
 

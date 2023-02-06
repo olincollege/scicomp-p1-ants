@@ -15,7 +15,7 @@ class Ant:
         self.x = x_pos
         self.y = y_pos
         self.heading = random.choice(self.orientations)
-        self.trail = False
+        self.trail = random.choice([True, False])
         self.fidelity = fidelity    # Decimal value from 0 to 1
         self.kernel = kernel        # 5 element list of decimals that add to 1
     
@@ -79,8 +79,11 @@ class Ant:
         
         # Retrieve the surroundings and reorient to match my heading
         surroundings = self.reorient(self.get_surroundings(worldmap))
-        # Throw out the value of the square we just came from
-        surroundings.pop(4)
+        # Throw out the values of the square we just came from
+        #surroundings.pop(4)
+        # Throw out the values of all three squares behind me
+        for _ in range(0,3):
+            surroundings.pop(3)
 
         # if all surrounding squares are zero, I switch to explore mode
         if sum(surroundings) == 0:
@@ -96,12 +99,14 @@ class Ant:
         if not self.trail:
             self.explore_move()
 
-        # otherwise I'm in trail mode and we have more sucky code to write
+        # otherwise I'm in trail mode
         else:
-            # if the biggest item is straight ahead and only appears once,
+            self.trail = True
+            # if the highest concentration is straight ahead and only appears once,
             if (max(surroundings) == surroundings[0]) and (surroundings.count(max(surroundings)) == 1):
                 # maintain the current heading and move forward
                 self.shift_position()
+            
             # if there are multiple maximum values, let's explore
             elif surroundings.count(max(surroundings)) > 1:
                 self.explore_move()
@@ -114,3 +119,60 @@ class Ant:
                 self.heading = self.reorient(self.orientations)[strongest]
                 # go move there!
                 self.shift_position()
+
+    """
+    ALTERNATE MOVE: Executes the decision algorithm and decides where to go.
+     - Takes 2D array worldmap as input.  Values of cells are pheromone levels.
+    """
+    def alt_move(self, worldmap):
+        
+        # Retrieve the surroundings and reorient to match my heading
+        surroundings = self.reorient(self.get_surroundings(worldmap))
+        # Throw out the values of the square we just came from
+        #surroundings.pop(4)
+        # Throw out the values of all three squares behind me
+        for _ in range(0,3):
+            surroundings.pop(3)
+
+        # if all surrounding squares are zero, I switch to explore mode
+        if sum(surroundings) == 0:
+            self.trail = False
+        # otherwise I'll use the fidelity to decide whether to switch modes
+        else:
+            # if I lose the coin toss, switch modes
+            if random.random() > self.fidelity:
+                self.trail = not self.trail
+            # otherwise leave my mode alone
+
+        # if I'm in explore mode let's move randomly via the kernel
+        if not self.trail:
+            self.explore_move()
+
+        # otherwise I'm in trail mode
+        else:
+            self.trail = True
+            # if the highest concentration is straight ahead and only appears once,
+            if (max(surroundings) == surroundings[0]) and (surroundings.count(max(surroundings)) == 1):
+                # maintain the current heading and move forward
+                self.shift_position()
+
+            # if there are multiple strongest values, let's follow the strongest one
+            elif surroundings.count(max(surroundings)) > 1:
+                # get the index of the strongest heading
+                strongest = surroundings.index(max(surroundings))
+                # use that index to set our new heading in that direction
+                self.heading = self.reorient(self.orientations)[strongest]
+                # go move there!
+                self.shift_position()
+
+            # only as a last resort, let's explore
+            else:
+                self.explore_move()
+    
+    """
+    DEBUG MOVE: Walk straight ahead
+    """
+    def debug_move(self):
+        self.heading = self.reorient(self.orientations)[0]
+        # move forward with that new heading
+        self.shift_position()
